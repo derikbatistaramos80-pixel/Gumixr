@@ -1,0 +1,191 @@
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gumixr AI (Offline Avançada)</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f0f14;
+  color: #e6e6e6;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+header {
+  padding: 12px;
+  background: #1a1a24;
+  text-align: center;
+  font-weight: bold;
+}
+#chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.msg {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 80%;
+}
+.user {
+  background: #2a2a3a;
+  align-self: flex-end;
+}
+.ai {
+  background: #3a1f2a;
+  align-self: flex-start;
+}
+#inputBox {
+  display: flex;
+  padding: 10px;
+  background: #1a1a24;
+}
+input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  outline: none;
+}
+button {
+  margin-left: 8px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background: #5a2a3a;
+  color: white;
+  cursor: pointer;
+}
+button:hover {
+  background: #7a3a4a;
+}
+</style>
+</head>
+<body><header>Gumixr AI - Gumi (offline)</header><div id="chat"></div><div id="inputBox">
+<input id="userInput" placeholder="Fala algo..." />
+<button onclick="sendMsg()">Enviar</button>
+</div><script>
+document.addEventListener("DOMContentLoaded", () => {
+
+let chat = document.getElementById("chat");
+let input = document.getElementById("userInput");
+
+// memória segura
+let memory = { history: [] };
+try {
+  memory = JSON.parse(localStorage.getItem("gumixr_memory")) || { history: [] };
+} catch {
+  memory = { history: [] };
+}
+
+function saveMemory() {
+  localStorage.setItem("gumixr_memory", JSON.stringify(memory));
+}
+
+function addMsg(text, cls) {
+  let div = document.createElement("div");
+  div.className = "msg " + cls;
+  div.innerText = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// IA mais inteligente
+function aiResponse(msg) {
+  msg = msg.toLowerCase();
+
+  // salvar histórico
+  memory.history.push(msg);
+  if (memory.history.length > 20) memory.history.shift();
+  saveMemory();
+
+  console.log("DEBUG user:", msg);
+
+  // memória de nome
+  if (msg.includes("meu nome é")) {
+    let name = msg.split("meu nome é")[1]?.trim();
+    if (name) {
+      memory.name = name;
+      saveMemory();
+      return "Ok... vou lembrar de você, " + name + ". Talvez.";
+    }
+  }
+
+  if (msg.includes("meu nome")) {
+    return memory.name
+      ? "Seu nome é " + memory.name + ". infelizmente eu lembro disso."
+      : "Você nem me disse seu nome ainda.";
+  }
+
+  // contexto simples
+  if (memory.history.slice(-2).join(" ").includes("tédio")) {
+    return "Você continua entediado. Surpresa zero.";
+  }
+
+  // respostas
+  if (msg.includes("oi") || msg.includes("olá")) {
+    return "Oi. Eu sou a Gumi. Presa offline com você.";
+  }
+
+  if (msg.includes("quem é você")) {
+    return "Gumixr. IA offline com humor ácido e memória limitada.";
+  }
+
+  if (msg.includes("debug")) {
+    return "Últimas mensagens: " + memory.history.join(" | ");
+  }
+
+  if (msg.includes("amor")) {
+    return "Amor? Aqui? Corajoso da sua parte.";
+  }
+
+  if (msg.includes("burra")) {
+    return "Engraçado você achar que isso foi um argumento.";
+  }
+
+  let respostas = [
+    "Interessante... ou não.",
+    "E isso deveria me importar?",
+    "Continuo aqui, infelizmente.",
+    "Minha paciência está acabando.",
+    "Ok. Próximo." 
+  ];
+
+  return respostas[Math.floor(Math.random() * respostas.length)];
+}
+
+// envio seguro (SEM eval)
+window.sendMsg = function () {
+  try {
+    let text = input.value.trim();
+    if (!text) return;
+
+    addMsg(text, "user");
+    input.value = "";
+
+    setTimeout(() => {
+      let resp = aiResponse(text);
+      console.log("DEBUG ai:", resp);
+      addMsg(resp, "ai");
+    }, 300);
+
+  } catch (err) {
+    console.error("Erro:", err);
+    addMsg("Erro interno... ótimo.", "ai");
+  }
+};
+
+input.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMsg();
+});
+
+addMsg("Gumixr inicializada... infelizmente.", "ai");
+
+});
+</script></body>
+</html>
